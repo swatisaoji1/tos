@@ -3,12 +3,12 @@
 static WINDOW shell_window = {0, 0,  61, 24, 0, 0, 0xDC};
 static WINDOW pacman_window= {61, 8, 19, 16, 0, 0, ' '};
 #define CMD_BUFFER 80
-#define CMD_SIZE 20
+#define CMD_SIZE 80
 
 char cmd[CMD_BUFFER]; // stores the full command with arguments
 int counter;
 int pacman_running = 0;
-
+int train_running = 0;
 
 
 // helper functions 
@@ -36,26 +36,29 @@ BOOL match_words(char* word1, char* word2){
 * @param word : stores the word.
 * @param start : starting index to start looking for the word.
 */
-void fetch_word(char* word, int start){
+int fetch_word(char* word, int start){
 	int i = start;
 	int j = 0;
+	int first_letter = 0;
 	while(cmd[i] == ' '){
 		i++;
 	}
-	while(cmd[i] != ' ' && i < CMD_SIZE-1 && cmd[i] != '\0'){
+	first_letter = i;
+	while(cmd[i] != ' ' && cmd[i] != '\0'){
 		word[j] = cmd[i];
 		i++;
 		j++;
 	}
 	word[j] = '\0';
+	return first_letter;
 }
 
 /**
 * gets the command word from global cmd into given parameter cmd_key
 * @param cmd_key : stores the command
 */
-void fetch_cmd(char* cmd_key){
-	fetch_word(cmd_key, 0);
+int fetch_cmd(char* cmd_key){
+	return fetch_word(cmd_key, 0);
 }
 
 /**
@@ -63,8 +66,9 @@ void fetch_cmd(char* cmd_key){
 * @param arg  - to store the arguments
 * @param cmd_size - size of the command  
 */
-void fetch_argument(char* arg, int cmd_size){
-	fetch_word(arg, cmd_size);
+void fetch_argument(char* arg, int cmd_size, int cmd_start){
+
+	fetch_word(arg, cmd_size + cmd_start);
 }
 
 
@@ -121,9 +125,9 @@ void help_train_stop(){
 
 
 /** prints help */
-void help(){
+void help(cmd_start){
 	char arg[CMD_SIZE - 4];
-	fetch_argument(arg, 4);
+	fetch_argument(arg, 4 ,cmd_start);
 	wprintf(&shell_window, "\n");
 	if(str_len(arg)){
 		if(match_words(arg, "help")){
@@ -182,8 +186,8 @@ void ps(){
 }
 
 /** prints the string passed as argument */
-void echo(){
-	char* message = cmd + 4;
+void echo(cmd_start){
+	char* message = cmd + 4 + cmd_start;
 	wprintf(&shell_window, "\n");
 	wprintf(&shell_window, message);
 	wprintf(&shell_window, "\n");
@@ -196,28 +200,36 @@ void clrShellWin(){
 }
 
 /** starts pacman */
-void pacman(){
+void pacman(cmd_start){
 	char arg[CMD_SIZE - 6];
 	if(pacman_running){
 		wprintf(&shell_window, "\nPacman already running !! \n");
 		return;
 	}
-	pacman_running = 1;
 	int ghosts = 3;
 
 	// get arguments if passed
-	fetch_argument(arg, 6);
+	fetch_argument(arg, 6, cmd_start);
 	if(str_len(arg))
 		ghosts =  arg[0]- '0';
-
+	if(ghosts < 0 || ghosts > 6){
+		wprintf(&shell_window, "\n Enter ghost count between 1 - 6 \n");
+		return;
+	}
+	
 	init_pacman(&pacman_window, ghosts);
+	pacman_running = 1;
 	wprintf(&shell_window, "\n");
+	
 }
 
 /** starts the train */
 void train_start(){
 	char* input_buffer;
-
+	if (train_running){
+		wprintf(&shell_window, "\n Train is  already Running !! \n");
+		return;
+	}
 	//create the message 
 	COM_Message msg;
 	msg.input_buffer = input_buffer;
@@ -226,14 +238,18 @@ void train_start(){
 
 	// send message to com port
 	send(com_port,&msg);
-	wprintf(&shell_window, "\n");
+	train_running = 1;
+	wprintf(&shell_window, "\n Train is Running !! \n");
 	
 }
 
 /** stops the train */
 void train_stop(){
 	char* input_buffer;
-
+	if (!train_running){
+		wprintf(&shell_window, "\n No train is running!! \n");
+		return;
+	}
 	//create the message 
 	COM_Message msg;
 	msg.input_buffer = input_buffer;
@@ -242,7 +258,8 @@ void train_stop(){
 
 	// send message to com port
 	send(com_port,&msg);
-	wprintf(&shell_window, "\n");
+	train_running = 0;
+	wprintf(&shell_window, "\n Train Stopped !!\n");
 }
 
 /** clears the command buffer  */
@@ -258,19 +275,20 @@ void clearCommandBuffer(){
 void executeShellCommand(){
 	counter = 0; // reset counter
 	char cmd_key[CMD_SIZE];
-	
-	fetch_cmd(cmd_key);
+	int cmd_start;
+
+	cmd_start = fetch_cmd(cmd_key);
 
 	if(match_words(cmd_key, "help")){
-		help();
+		help(cmd_start);
 	}else if(match_words(cmd_key, "cls")){
 		clrShellWin();
 	}else if(match_words(cmd_key, "pacman")){		
-		pacman();
+		pacman(cmd_start);
 	}else if(match_words(cmd_key, "ps")){		
 		ps();
 	}else if(match_words(cmd_key, "echo")){		
-		echo();
+		echo(cmd_start);
 	}else if(match_words(cmd_key, "about")){		
 		about();
 	}else if(match_words(cmd_key, "start_train")){		
