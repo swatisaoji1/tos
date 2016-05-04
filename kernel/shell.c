@@ -7,6 +7,7 @@ static WINDOW pacman_window= {61, 8, 19, 16, 0, 0, ' '};
 
 char cmd[CMD_BUFFER]; // stores the full command with arguments
 int counter;
+int pacman_running = 0;
 
 
 
@@ -197,6 +198,11 @@ void clrShellWin(){
 /** starts pacman */
 void pacman(){
 	char arg[CMD_SIZE - 6];
+	if(pacman_running){
+		wprintf(&shell_window, "\nPacman already running !! \n");
+		return;
+	}
+	pacman_running = 1;
 	int ghosts = 3;
 
 	// get arguments if passed
