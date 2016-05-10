@@ -2,6 +2,8 @@
 
 static WINDOW shell_window = {0, 0,  61, 24, 0, 0, 0xDC};
 static WINDOW pacman_window= {61, 8, 19, 16, 0, 0, ' '};
+//static WINDOW train_window = {0, 0,  61, 24, 0, 0, 0xDC};
+static WINDOW train_window= {61, 0, 19, 8, 0, 0, ' '};
 #define CMD_BUFFER 80
 #define CMD_SIZE 80
 
@@ -20,8 +22,9 @@ void welcome(){
 
 /** 
 * Compares the two words and returns true if  words match or false otherwise
-* @param word1 - word to be compared
-* @param word2 - word to compare with
+* @param word1 : word to be compared
+* @param word2 : word to compare with
+* @return : true if words match, false otherwise
 */
 BOOL match_words(char* word1, char* word2){
 	while (*word1 == *word2 && *word2 != '\0') {
@@ -35,6 +38,7 @@ BOOL match_words(char* word1, char* word2){
 * copies one word from cmd (global) starting at index 'start' and stores in given parameter 'word'.
 * @param word : stores the word.
 * @param start : starting index to start looking for the word.
+* @return : index where the command starts after discarding the spaces
 */
 int fetch_word(char* word, int start){
 	int i = start;
@@ -295,6 +299,8 @@ void executeShellCommand(){
 		train_start();
 	}else if(match_words(cmd_key, "stop_train")){		
 		train_stop();
+	}else if(match_words(cmd_key, "train")){		
+		start_train();
 	}else if(!str_len(cmd_key)){
 		wprintf(&shell_window, "\n");
 	}
@@ -316,7 +322,7 @@ void tosShell(PROCESS self, PARAM param){
  	wprintf(&shell_window,"tos-shell >>", ch);
 	while(1){
 
-		// get the character from keboard
+		// get the character from keyboard
 		command.key_buffer = &ch;
 		send(keyb_port, &command);
 
@@ -334,7 +340,7 @@ void tosShell(PROCESS self, PARAM param){
 				wprintf(&shell_window,"tos-shell >>");
 				break;
 			default:
-				// check buffer and print back the charater
+				// check buffer and print back the character
 				cmd[counter] = ch;
 				if(counter < CMD_BUFFER-4){
 					counter++;
@@ -343,6 +349,11 @@ void tosShell(PROCESS self, PARAM param){
 				break;	
 		}
 	}
+}
+
+void start_train(){
+	init_train(&train_window);
+	wprintf(&shell_window, "\n");
 }
 
 /** initialization */
