@@ -1,9 +1,10 @@
 #include <kernel.h>
 
-static WINDOW shell_window = {0, 0,  61, 24, 0, 0, 0xDC};
+static WINDOW shell_window = {0, 9,  61, 15, 0, 0, 0xDC};
 static WINDOW pacman_window= {61, 8, 19, 16, 0, 0, ' '};
 //static WINDOW train_window = {0, 0,  61, 24, 0, 0, 0xDC};
-static WINDOW train_window= {61, 0, 19, 8, 0, 0, ' '};
+//static WINDOW train_window= {61, 0, 19, 8, 0, 0, ' '};
+static WINDOW train_window = {0, 0, 80, 8, 0, 0, ' '};
 #define CMD_BUFFER 80
 #define CMD_SIZE 80
 

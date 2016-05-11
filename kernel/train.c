@@ -136,6 +136,9 @@ void init_safe_switches(){
 	change_switch(1, 'G');
 	change_switch(4, 'G');
 }
+
+
+/** checks the presence of zamboni returns 1 for yes and 0 for no*/
 int check_zamboni(){
 	int i;
 	wprintf(train_window,"Scanning for zambini \n");
@@ -279,14 +282,14 @@ void solve_config4(){
 	if(zamboni){
 		while(!check_train_on_track("2"));
 		change_switch(4, 'G');
-		change_speed(0);
-		wprintf(train_window,"Playing too safe .. \n");
-		wprintf(train_window,"Waiting for zamboni to pass \n");
-		while(!check_train_on_track("14"));
-		wprintf(train_window,"Zamboni passed..Getting Wagon\n");
-		change_speed(5);
+		//change_speed(0);
+		//wprintf(train_window,"Playing too safe .. \n");
+		//wprintf(train_window,"Waiting for zamboni to pass \n");
+		//while(!check_train_on_track("14"));
+		//wprintf(train_window,"Zamboni passed..Getting Wagon\n");
+		//change_speed(5);
 		// zamboni passing 13 so we dont land up confusing zambini for train
-		while(!check_train_on_track("13"));
+		//while(!check_train_on_track("13"));
 	}
 		
 	while(!check_train_on_track("14"));
